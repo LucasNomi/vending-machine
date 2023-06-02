@@ -1,2 +1,5 @@
 # vending-machine
-Trabalho Final de Algoritmos e Lógica de Programação 1°Sem
+
+### Integrantes da equipe
+- **Lucas de Souza Silva** / 2840482311017
+- **Thales Henrique Conti dos Santos** / 2840482311012 
