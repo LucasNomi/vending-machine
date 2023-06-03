@@ -7,62 +7,138 @@
 #include <iostream>
 #include <stdlib.h>
 
-const int maxQtdProduto = 10;
+const int maxQty = 10;
 
 struct produto
 {
-    int qtdProduto;
-    float precoProduto;
-    char *nomeProduto;
+    int qty;
+    float price;
+    char *name;
 
-    produto() : qtdProduto(0), precoProduto(0), nomeProduto("produto") {}
+    produto() : qty(1), price(1), name("produto") {}
 
     // User functions
-    float Purchase(float dinheiro)
+    float Purchase(float money)
     {
-        float troco;
-
-        if (dinheiro >= precoProduto)
+        if (money >= price)
         {
-            qtdProduto--;
-            troco = dinheiro - precoProduto;
-            return troco;
+            qty--;
+            money = money - price;
+            return money;
         }
         else
         {
             std::cout << "Nao foi possivel comprar o produto! \n";
-            return dinheiro;
+            return -1;
         }
     }
 
     // Adm functions
     void Restock()
     {
-        qtdProduto = maxQtdProduto;
+        qty = maxQty;
     }
 
-    float Faturamento()
+    float Sales()
     {
-        float faturamento = (maxQtdProduto - qtdProduto) * precoProduto;
+        float faturamento = (maxQty - qty) * price;
 
         return faturamento;
     }
 
-    float FaturamentoFuturo()
+    float UpcomingSales()
     {
-        float faturamentoFuturo;
-        float faturamentoTotal = maxQtdProduto * precoProduto;
-        float faturamentoAtual = Faturamento();
+        float upcomingSales;
+        float totalSales = maxQty * price;
+        float currentSales = Sales();
 
-        faturamentoFuturo = faturamentoTotal - faturamentoAtual;
+        upcomingSales = totalSales - currentSales;
 
-        return faturamentoFuturo;
+        return upcomingSales;
     }
 };
 
+int VendingMachine(int size, produto *vendingMachine);
+void CleanScreen();
+
 int main()
 {
+
+    float money;
+    do
+    {
+        std::cout << "Insira uma quantia em dinheiro para comecar a compra...\n";
+        std::cin >> money;
+
+        if (money <= 0)
+        {
+            CleanScreen();
+            std::cout << "Quantia inserida invalida.\n";
+        }
+
+    } while (money <= 0);
+
+    produto vendingMachine[16];
+    int qtyItem = sizeof vendingMachine / sizeof vendingMachine[0];
+    int idProd;
+
+    idProd = VendingMachine(qtyItem, vendingMachine);
+
+    float change;
+    change = vendingMachine[idProd].Purchase(money);
+
+    std::cout << "Troco: " << change << "\n";
+
     return 0;
+}
+
+// User Screen
+int VendingMachine(int qty, produto *vendingMachine)
+{
+    produto selectedProd;
+    char ans;
+    int idProd;
+    do
+    {
+        std::cout << "*---MAQUINA DE VENDA---*\n";
+        for (int i = 0; i < qty; i++)
+        {
+            selectedProd = vendingMachine[i];
+            if (selectedProd.qty > 0)
+            {
+                std::cout << "(" << i + 1 << ")";
+                std::cout << selectedProd.name << "\n";
+                std::cout << "Preco: " << selectedProd.price << "\n\n";
+            }
+        }
+
+        std::cout << "Qual produto deseja comprar? \n";
+        std::cout << "--> ";
+        std::cin >> idProd;
+
+        std::cout << "CONFIRMAR COMPRA? [s/n]", std::cin >> ans;
+
+        if (ans == 'n')
+        {
+            CleanScreen();
+        }
+        else
+        {
+            CleanScreen();
+            std::cout << "Processando compra...\n";
+        }
+
+    } while (ans == 'n');
+
+    idProd--;
+    if (idProd < qty)
+    {
+        return idProd;
+    }
+    else
+    {
+        return -1;
+    }
 }
 
 // Misc functions
