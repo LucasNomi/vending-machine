@@ -15,7 +15,7 @@ struct produto
     float precoProduto;
     char *nomeProduto;
 
-    produto() : qtdProduto(1), precoProduto(1), nomeProduto("produto") {}
+    produto() : qtdProduto(0), precoProduto(0), nomeProduto("produto") {}
 
     // User functions
     float Purchase(float dinheiro)
@@ -43,8 +43,7 @@ struct produto
 
     float Faturamento()
     {
-        float faturamento = 0;
-        faturamento = (maxQtdProduto - qtdProduto) * precoProduto;
+        float faturamento = (maxQtdProduto - qtdProduto) * precoProduto;
 
         return faturamento;
     }
