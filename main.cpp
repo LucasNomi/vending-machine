@@ -15,9 +15,7 @@ struct produto
 {
     int qty;
     float price;
-    char *name;
-
-    produto() : qty(1), price(1), name("produto") {}
+    const char *name;
 
     // User functions
     float Purchase(float money)
@@ -58,13 +56,6 @@ struct produto
         upcomingSales = maxPossibleSales - currentSales;
         return upcomingSales;
     }
-
-    void AddProduto(float newPrice, char *newName)
-    {
-        qty = maxQty;
-        price = newPrice;
-        name = newName;
-    }
 };
 
 void ShowVendingMachine(bool isAdm, int qty, produto *vendingMachine);
@@ -74,27 +65,49 @@ void CleanScreen();
 
 int main()
 {
-    produto vendingMachine[16];
+    produto vendingMachine[16] = {
+        {maxQty, 6.5, "Pepsi-Cola"},
+        {maxQty, 7.5, "Coca-Cola"},
+        {maxQty, 5.5, "Delvalle Kapo"},
+        {maxQty, 3.7, "Agua"},
+        {maxQty, 9.9, "Doritos"},
+        {maxQty, 11.8, "Cheetos"},
+        {maxQty, 8.9, "Fandangos"},
+        {maxQty, 3, "Trofeu"},
+        {maxQty, 4, "Snickers"},
+        {maxQty, 6.6, "Pipoca Doce"},
+        {maxQty, 2.5, "Bombom"},
+        {maxQty, 3, "Amendoim"},
+        {maxQty, 14, "Guarda-chuva"},
+        {maxQty, 8.7, "Dorflex"},
+        {maxQty, 20, "Chip Claro (Pre-pago)"},
+        {maxQty, 50.5, "Havaianas"}};
+
     int qtyItem = sizeof vendingMachine / sizeof vendingMachine[0];
 
-    std::cout << "[1] Entrar como usuario [2] Entrar como administrador \n";
-    std::cout << "--> ";
     int choice;
-    std::cin >> choice;
-
-    switch (choice)
+    do
     {
-    case 1:
-        CleanScreen();
-        UserVendingMachine(qtyItem, vendingMachine);
-        break;
-    case 2:
-        CleanScreen();
-        ControlVendingMachine(qtyItem, vendingMachine);
-        break;
-    default:
-        break;
-    }
+        std::cout << "[1] Entrar como usuario [2] Entrar como administrador [3] Sair \n";
+        std::cout << "--> ";
+        std::cin >> choice;
+
+        switch (choice)
+        {
+        case 1:
+            CleanScreen();
+            UserVendingMachine(qtyItem, vendingMachine);
+            break;
+        case 2:
+            CleanScreen();
+            ControlVendingMachine(qtyItem, vendingMachine);
+            break;
+        default:
+            CleanScreen();
+            break;
+        }
+        
+    } while (choice != 3);
 
     return 0;
 }
@@ -159,7 +172,7 @@ void UserVendingMachine(int qty, produto *vendingMachine)
         std::cout << "CONFIRMAR COMPRA? [s/n] \n";
         std::cin >> ans;
 
-        if (idProd >= qty || idProd <= 0 || vendingMachine[idProd].qty == 0)
+        if (idProd >= qty || idProd < 0 || vendingMachine[idProd].qty == 0)
         {
             std::cout << "Codigo do produto invalido! \n";
             std::cout << "Reiniciando sua compra... \n";
@@ -172,7 +185,7 @@ void UserVendingMachine(int qty, produto *vendingMachine)
             std::this_thread::sleep_for(std::chrono::seconds(2));
         }
 
-    } while (ans == 'n' || idProd >= qty || idProd <= 0 || vendingMachine[idProd].qty == 0);
+    } while (ans == 'n' || idProd >= qty || idProd < 0 || vendingMachine[idProd].qty == 0);
 
     float change;
     change = vendingMachine[idProd].Purchase(money);
@@ -203,18 +216,19 @@ void ControlVendingMachine(int qty, produto *vendingMachine)
 
         std::cout << "-*MODO ADMINISTRADOR*-\n";
         std::cout << "[1] Restock de produto [2] Faturamento [3] Faturamento futuro \n";
-        std::cout << "[4] Modificar produto [5] Adicionar produtos \n";
         std::cout << "--> ";
         std::cin >> choice;
 
         switch (choice)
         {
         case 1:
-            CleanScreen();
             std::cout << "Selecione o produto para fazer restock";
             std::cout << "--> ";
+            CleanScreen();
             std::cin >> idProd;
+            std::cout << "Qty antiga: " << vendingMachine[idProd].qty << "\n";
             vendingMachine[idProd].Restock();
+            std::cout << "Qty nova: " << vendingMachine[idProd].qty << "\n";
             break;
         case 2:
             CleanScreen();
@@ -226,7 +240,7 @@ void ControlVendingMachine(int qty, produto *vendingMachine)
                 totalSales += vendingMachine[i].Sales();
             }
 
-            std::cout << "Faturamento: RS" << totalSales;
+            std::cout << "Faturamento: RS" << totalSales << "\n";
             break;
         case 3:
             CleanScreen();
@@ -238,27 +252,7 @@ void ControlVendingMachine(int qty, produto *vendingMachine)
                 totalUpcomingSales += vendingMachine[i].UpcomingSales();
             }
 
-            std::cout << "Faturamento futuro: RS" << totalUpcomingSales;
-            break;
-        case 4:
-            std::cout << "Selecione o produto para fazer modificar \n";
-            std::cout << "--> ";
-            std::cin >> idProd;
-
-            CleanScreen();
-            std::cout << "Novo produto: ";
-            char *product;
-            std::cin >> product;
-
-            CleanScreen();
-            std::cout << "Novo preco: ";
-            float price;
-            std::cin >> price;
-
-            vendingMachine[idProd].AddProduto(price, product);
-            break;
-        case 5:
-            CleanScreen();
+            std::cout << "Faturamento futuro: RS" << totalUpcomingSales << "\n";
             break;
         default:
             CleanScreen();
@@ -266,7 +260,7 @@ void ControlVendingMachine(int qty, produto *vendingMachine)
             break;
         }
 
-    } while (choice <= 0 || choice > 5);
+    } while (choice <= 0 || choice > 3);
 }
 
 // Misc functions
