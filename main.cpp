@@ -1,3 +1,5 @@
+// Detecta o sistema operacional do usuario
+
 #if defined(_WIN32) || defined(_WIN64)
 #define PLATFORM_NAME "windows"
 #else
@@ -9,15 +11,24 @@
 #include <chrono>
 #include <thread>
 
+// Define a quantidade maxima de entidades para um produto.
 const int maxQty = 10;
 
+// estrutura para um produto
 struct produto
 {
+    // cada produto possui uma quantidade, um preco e um nome
     int qty;
     float price;
-    const char *name;
+    std::string name;
 
     // User functions
+
+    // Funcao para comprar um produto
+    // Recebe uma quantia em dinheiro, se esse dinheiro for suficiente para
+    // comprar o produto, entao a quantidade do produto e reduzida
+    // e o preco do produto e subtraido do dinheiro, retornando como um troco
+    // Caso nao for suficiente retorna -1 para simbolizar um erro.
     float Purchase(float money)
     {
         if (money >= price)
@@ -33,11 +44,18 @@ struct produto
     }
 
     // Adm functions
+
+    // Funcao para fazer o restock do produto
+    // define a quantidade do produto como sua quantidade maxima
     void Restock()
     {
         qty = maxQty;
     }
 
+    // Funcao para verificar o faturamento do produto
+    // O calculo do faturamento e feito subtraindo a quantidade atual
+    // do produto de sua quantidade maxima, achando assim quantos produtos
+    // foram vendidos, o resultado e entao multiplicado pelo preco do produto
     float Sales()
     {
         float sales = (maxQty - qty) * price;
@@ -45,6 +63,10 @@ struct produto
         return sales;
     }
 
+    // Funcao para verificar o faturamento futuro do produto
+    // O calculo do faturamento futuro e feito primeiro achando o
+    // faturamento total possivel do produto, entao o faturamento atual
+    // e depois subtrai o faturamento atual do faturamento possivel
     float UpcomingSales()
     {
         float maxPossibleSales = maxQty * price;
@@ -65,6 +87,7 @@ void CleanScreen();
 
 int main()
 {
+    // Inicializacao de uma maquina de vendas padrao
     produto vendingMachine[16] = {
         {maxQty, 6.5, "Pepsi-Cola"},
         {maxQty, 7.5, "Coca-Cola"},
@@ -83,6 +106,9 @@ int main()
         {maxQty, 20, "Chip Claro (Pre-pago)"},
         {maxQty, 50.5, "Havaianas"}};
 
+    // Calcula a quantidade de produtos da maquina de vendas
+    // o tamanho total da maquina de vendas (16 * tmn de cada produto)
+    // e dividido pelo tamanho do seu primeiro produto
     int qtyItem = sizeof vendingMachine / sizeof vendingMachine[0];
 
     int choice;
@@ -113,6 +139,11 @@ int main()
 }
 
 // Show vendingmachine
+
+// funcao utilizada para mostrar os produtos da maquina de vendas
+// Recebe como parametros um booleano para saber se e um adm
+// a quantidade de itens da maquina de vendas para iteracao
+// e a propria maquina de vendas
 void ShowVendingMachine(bool isAdm, int qty, produto *vendingMachine)
 {
     produto selectedProd;
@@ -122,12 +153,15 @@ void ShowVendingMachine(bool isAdm, int qty, produto *vendingMachine)
         selectedProd = vendingMachine[i];
         if (isAdm)
         {
+            // se for um adm ira mostrar a quantidade atual de cada item
             std::cout << "(" << i + 1 << ")";
             std::cout << selectedProd.name << "\n";
             std::cout << "Qty: " << selectedProd.qty << "\n\n";
         }
         else
         {
+            // se o produto existir (tiver quantidade maior que zero)
+            // ele ira ser mostrado para o usuario, junto com seu preco  
             if (selectedProd.qty > 0)
             {
                 std::cout << "(" << i + 1 << ")";
@@ -139,6 +173,10 @@ void ShowVendingMachine(bool isAdm, int qty, produto *vendingMachine)
 }
 
 // User Screen
+
+// Funcao utilizada pelo usuario para fazer sua compra
+// recebe quantidade de itens na maquina de venda para iteracao
+// recebe a propria maquina de vendas
 void UserVendingMachine(int qty, produto *vendingMachine)
 {
 
@@ -184,15 +222,17 @@ void UserVendingMachine(int qty, produto *vendingMachine)
             std::cout << "Processando compra...\n";
             std::this_thread::sleep_for(std::chrono::seconds(2));
         }
-
+    // nao permite o usuario comprar produtos que nao existam (id > qtytotal)
+    // nao permite o usuario comprar produtos que nao estao disponiveis (qty < 0)
     } while (ans == 'n' || idProd >= qty || idProd < 0 || vendingMachine[idProd].qty == 0);
 
     float change;
     change = vendingMachine[idProd].Purchase(money);
 
+    // manipula o erro de retorno -1 da funcao purchase
     if (change == -1)
     {
-        std::cout << "Dinheiro nao suficiente para comprar o produto\n";
+        std::cout << "Dinheiro insuficiente para comprar o produto\n";
         std::cout << "Retornando seu dinheiro...\n";
         std::cout << "Compre outro produto ou insira mais dinheiro.\n\n";
         std::cout << "Troco: " << money << "\n";
@@ -206,6 +246,9 @@ void UserVendingMachine(int qty, produto *vendingMachine)
 
 // Adm Screen
 
+// Funcao utilizada pelo adm para manipular a maquina
+// recebe quantidade de itens na maquina de venda para iteracao
+// recebe a propria maquina de vendas
 void ControlVendingMachine(int qty, produto *vendingMachine)
 {
     int choice;
@@ -235,6 +278,8 @@ void ControlVendingMachine(int qty, produto *vendingMachine)
             float totalSales;
             totalSales = 0;
 
+            // calcula o total de faturamento da maquina fazendo uma iteracao
+            // por cada produto e achando seu faturamento atual
             for (int i = 0; i < qty; i++)
             {
                 totalSales += vendingMachine[i].Sales();
@@ -247,6 +292,8 @@ void ControlVendingMachine(int qty, produto *vendingMachine)
             float totalUpcomingSales;
             totalUpcomingSales = 0;
 
+            // calcula o faturamento futuro da maquina fazendo uma iteracao
+            // por cada produto e achando seu faturamento futuro
             for (int i = 0; i < qty; i++)
             {
                 totalUpcomingSales += vendingMachine[i].UpcomingSales();
@@ -264,6 +311,8 @@ void ControlVendingMachine(int qty, produto *vendingMachine)
 }
 
 // Misc functions
+
+// Limpa a tela de acordo com o comando utilizado em cada OS
 void CleanScreen()
 {
     if (PLATFORM_NAME == "windows")
